@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8003343062105046206}
   - component: {fileID: 7181005643316794343}
   - component: {fileID: 4359537237067837919}
-  - component: {fileID: -1218376548919480719}
+  - component: {fileID: 3978988232651134576}
   m_Layer: 0
   m_Name: Grid Square
   m_TagString: Untagged
@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 5243451762692587556}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 20}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -108,7 +108,7 @@ MonoBehaviour:
   path: {fileID: 0}
   pathPrefab: {fileID: 5605626420561746167, guid: fd184b1490d8e774ea925866311fc4c7, type: 3}
   gameManager: {fileID: 0}
---- !u!61 &-1218376548919480719
+--- !u!61 &3978988232651134576
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -152,5 +152,5 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 2.25, y: 2.25}
+  m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0

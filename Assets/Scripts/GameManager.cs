@@ -25,12 +25,12 @@ public class GameManager : MonoBehaviour
     // Current Play Data
     public GameObject selectedTower;
 
-    public GameObject testTower;
+    public GameObject testTower, testEnemy;
 
     // Wave Loading Checks
     int waveLength;
     bool waveDone = false;
-    private readonly WaitForSeconds cooldown = new(1);
+    private readonly WaitForSeconds cooldown = new(3);
     private readonly WaitForSeconds warmup = new(5);
 
     // Prefabs
@@ -44,6 +44,15 @@ public class GameManager : MonoBehaviour
     {
         public GameObject type;
         public int count;
+    }
+
+    IEnumerator SpawnTestEnemy()
+    {
+        while (true)
+        {
+            Instantiate(testEnemy, spawnPoint.transform.position, Quaternion.identity);
+            yield return cooldown;
+        }
     }
 
     private void Update()
@@ -69,10 +78,11 @@ public class GameManager : MonoBehaviour
             MakeInitialGrid();
 
         // Wait 5 seconds
-        StartCoroutine(nameof(WarmUp));
+        //StartCoroutine(nameof(WarmUp));
 
         // Start the game
-        startGame = true;
+        //startGame = true;
+        StartCoroutine(SpawnTestEnemy());
     }
 
     private void LoadSave()
