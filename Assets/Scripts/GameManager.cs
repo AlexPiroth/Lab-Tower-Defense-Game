@@ -89,7 +89,7 @@ public class GameManager : MonoBehaviour
     {
         // Load the saved grid, figure this out later
     }
-    
+
     private void MakeEmptyGrid()
     {
         // Make grid parent object
@@ -132,6 +132,7 @@ public class GameManager : MonoBehaviour
             else
                 ExtendPath(2);
         }
+        PathScript.previousPathNode = GameObject.Find("TestTower(Clone)"); // EXTREMELY TEMPORARY
     }
 
     public void SetSelectedTower(GameObject towerPrefab)

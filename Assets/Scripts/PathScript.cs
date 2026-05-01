@@ -1,13 +1,17 @@
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class PathScript : MonoBehaviour
 {
+    public static GameObject previousPathNode;
     [SerializeField] Sprite[] spawnPoint; //0 = up, 1 = down, 2 = left, 3 = right
     [SerializeField] Sprite straight, corner;
+    [SerializeField] GameObject node;
     int startDir;
     SpriteRenderer render;
+
     public void Spawn(int direction)
-    {
+    {;
         render = gameObject.GetComponent<SpriteRenderer>();
         render.sprite = spawnPoint[direction];
         switch (direction)
@@ -43,6 +47,10 @@ public class PathScript : MonoBehaviour
         // Corner paths
         else
         {
+            PathNode newNode = Instantiate(node, transform).GetComponent<PathNode>();
+            newNode.nextNode = PathScript.previousPathNode;
+            PathScript.previousPathNode = newNode.gameObject;
+            Debug.Log(PathScript.previousPathNode.name);
             render.sprite = corner;
             // Do nothing for 0,2 and 2,0
             if ((startDir == 0 && direction == 3)||(startDir == 3 && direction == 0))

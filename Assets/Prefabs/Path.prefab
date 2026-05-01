@@ -111,3 +111,4 @@ MonoBehaviour:
   - {fileID: 21300000, guid: c973c9d88355b894793e9491e57430c1, type: 3}
   straight: {fileID: 21300000, guid: 86ca8175d2dd82647b306cc537cbca91, type: 3}
   corner: {fileID: 21300000, guid: 3ae83dbd255ca5c42a4819bd9007c43d, type: 3}
+  node: {fileID: 1104749927457866940, guid: 6551dd6ae35d7524a80587f971934f08, type: 3}
