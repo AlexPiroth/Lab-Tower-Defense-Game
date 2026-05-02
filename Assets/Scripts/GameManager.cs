@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
     static bool continuing = false;
 
     // Grid Dimensions
-    public const int HEIGHT = 9, WIDTH = 16;
+    public const int HEIGHT = 10, WIDTH = 18;
 
     // Stats
     int level;
@@ -19,14 +19,18 @@ public class GameManager : MonoBehaviour
     public GameObject spawnPoint;
     public GameObject[] livingEnemies;
     public GameObject[,] grid;
+    public int[] spawnCoords;
     public GameObject cameraObj;
 
-    public GameObject testTower;
+    // Current Play Data
+    public GameObject selectedTower;
+
+    public GameObject testTower, testEnemy;
 
     // Wave Loading Checks
     int waveLength;
     bool waveDone = false;
-    private readonly WaitForSeconds cooldown = new(1);
+    private readonly WaitForSeconds cooldown = new(3);
     private readonly WaitForSeconds warmup = new(5);
 
     // Prefabs
@@ -40,6 +44,15 @@ public class GameManager : MonoBehaviour
     {
         public GameObject type;
         public int count;
+    }
+
+    IEnumerator SpawnTestEnemy()
+    {
+        while (true)
+        {
+            Instantiate(testEnemy, spawnPoint.transform.position, Quaternion.identity);
+            yield return cooldown;
+        }
     }
 
     private void Update()
@@ -65,17 +78,18 @@ public class GameManager : MonoBehaviour
             MakeInitialGrid();
 
         // Wait 5 seconds
-        StartCoroutine(nameof(WarmUp));
+        //StartCoroutine(nameof(WarmUp));
 
         // Start the game
-        startGame = true;
+        //startGame = true;
+        StartCoroutine(SpawnTestEnemy());
     }
 
     private void LoadSave()
     {
         // Load the saved grid, figure this out later
     }
-    
+
     private void MakeEmptyGrid()
     {
         // Make grid parent object
@@ -108,19 +122,81 @@ public class GameManager : MonoBehaviour
 
     private void MakeInitialGrid()
     {
+        spawnCoords = new int[2];
         GridSpace gridSpace;
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 7; i++)
         {
             gridSpace = grid[4, 13 - i].GetComponent<GridSpace>();
             if (i == 0)
-                gridSpace.SpawnTower(testTower);
-            else if (i == 4)
-            {
-                gridSpace.SpawnTower(spawnPointPrefab);
-            }
+                gridSpace.SpawnTower(testTower); // Will be the "castle"
             else
-                gridSpace.SetPath();
+                ExtendPath(2);
         }
+        PathScript.previousPathNode = GameObject.Find("TestTower(Clone)"); // EXTREMELY TEMPORARY
+    }
+
+    public void SetSelectedTower(GameObject towerPrefab)
+    {
+        selectedTower = towerPrefab;
+    }
+
+    public void ExtendPath(int direction)
+    {
+        if (spawnPoint == null)
+        {
+            spawnPoint = grid[4, 12];
+            spawnCoords[0] = 4;
+            spawnCoords[1] = 12;
+            GridSpace startSpawn = spawnPoint.GetComponent<GridSpace>();
+            startSpawn.SetPath(direction);
+            return;
+        }
+
+        // Get new spawn
+        GridSpace newSpawn;
+        switch (direction)
+        {
+            // UDLR
+            case 0:
+                newSpawn = grid[spawnCoords[0] - 1, spawnCoords[1]].GetComponent<GridSpace>();
+                if (newSpawn == null || !newSpawn.CheckSpawnLegality())
+                    return;
+                spawnCoords[0]--;
+                break;
+
+            case 1:
+                newSpawn = grid[spawnCoords[0] + 1, spawnCoords[1]].GetComponent<GridSpace>();
+                if (newSpawn == null || !newSpawn.CheckSpawnLegality())
+                    return;
+                spawnCoords[0]++;
+                break;
+
+            case 2:
+                newSpawn = grid[spawnCoords[0], spawnCoords[1] - 1].GetComponent<GridSpace>();
+                if (newSpawn == null || !newSpawn.CheckSpawnLegality())
+                    return;
+                spawnCoords[1]--;
+                break;
+            
+            case 3:
+                newSpawn = grid[spawnCoords[0], spawnCoords[1] + 1].GetComponent<GridSpace>();
+                if (newSpawn == null || !newSpawn.CheckSpawnLegality())
+                    return;
+                spawnCoords[1]++;
+                break;
+
+            default:
+                newSpawn = null;
+                break;
+        }
+
+        // Change current spawn to a path
+        GridSpace spawn = spawnPoint.GetComponent<GridSpace>();
+        spawn.path.Extend(direction);
+
+        // Set new spawn point
+        spawnPoint = newSpawn.gameObject;
+        newSpawn.SetPath(direction);
     }
 
     private void SpawnNextWave()
@@ -135,6 +211,7 @@ public class GameManager : MonoBehaviour
         }
         else // Manual wave generation, read from clusters
         {
+            Debug.Log("blork");
             for (int i = 0; i < waveLength; i++)
             {
                 StartCoroutine(nameof(SpawnManualCluster));
