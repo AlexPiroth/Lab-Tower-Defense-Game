@@ -156,7 +156,7 @@ MonoBehaviour:
   cameraObj: {fileID: 330585543}
   selectedTower: {fileID: 0}
   testTower: {fileID: 2581989155602299556, guid: 38a3746c0fb7dd14fb25f43517532b02, type: 3}
-  testEnemy: {fileID: 8518955375893804376, guid: 901801be561eda44fa481bab21b97259, type: 3}
+  testEnemy: {fileID: 8518955375893804376, guid: 79e58d1b8c2eb864f95f22ff0ad79d76, type: 3}
   allEnemyTypes: []
   gridPrefab: {fileID: 5243451762692587556, guid: 38d35f5be61528342b006f9df20956b5, type: 3}
   spawnPointPrefab: {fileID: 7494019247307058698, guid: a7c77165d319fd04488676fdd84afc7a, type: 3}
@@ -697,7 +697,7 @@ MonoBehaviour:
         m_MethodName: SetSelectedTower
         m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 121461865849348145, guid: d410f9e54a66ae8499fb94905f4f382d, type: 3}
+          m_ObjectArgument: {fileID: 5058951355369601499, guid: c689364848e80b9428a5509250185b3d, type: 3}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0

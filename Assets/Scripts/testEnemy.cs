@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class testEnemy : MonoBehaviour
@@ -5,28 +6,87 @@ public class testEnemy : MonoBehaviour
     GameManager gameManager;
     public GameObject target;
     public int health = 5;
-    public float speed = 0.005f;
+    [SerializeField] int damage;
+    public float speed, attackCooldown;
+    public int buildup = 1, type; // 0 = basic, 1 = ransomware
+    public bool detectable = true;
+    public Vector2 direction;
+    Damageable attackTarget;
+    WaitForSeconds cooldown;
+    bool attacking = false;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        cooldown = new WaitForSeconds(attackCooldown);
         target = PathScript.previousPathNode;
-        Debug.Log(PathScript.previousPathNode.name);
-        transform.position += new Vector3(0, 0, -1);
+        transform.position += new Vector3(0, 0, -2);
+        SetDirection();
     }
 
     // Update is called once per frame
     void Update()
     {
+        // Self-explanatory
         if (health <= 0)
-            Destroy(this.gameObject);
-        Vector2 dist = Vector2.Normalize(target.transform.position - transform.position) * speed;
+            Die();
+
+        // Check for a target to attack
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, 0.05f, LayerMask.GetMask("Damageable"));
+        if (hit)
+        {
+            if (!attacking)
+            {
+                attackTarget = hit.transform.gameObject.GetComponent<Damageable>();
+                StartCoroutine(nameof(Attack));
+                attacking = true;
+            }
+            return;
+        }
+        else if (attacking)
+        {
+            attackTarget = null;
+            attacking = false;
+            StopCoroutine(nameof(Attack));
+        }
+
+        // Calculate movement and move
+        Vector2 dist = direction * speed;
         if (Vector2.Distance(transform.position, target.transform.position) > dist.magnitude)
-            transform.Translate(Vector2.Normalize(target.transform.position - transform.position) * 0.005f);
-        else
+            transform.Translate(dist);
+        else if (target.name != "TestTower(Clone)")
         {
             transform.Translate(target.transform.position - transform.position);
+            if (type == 1)
+            {
+                TowerAttack tower = target.GetComponent<TowerAttack>();
+                if (tower != null)
+                {
+                    tower.ransom = true;
+                    Die();
+                }
+            }
             PathNode pathNode = target.GetComponent<PathNode>();
             target = pathNode.nextNode;
+            SetDirection();
+        }
+    }
+
+    public virtual void Die()
+    {
+        Destroy(this.gameObject);
+    }
+
+    public void SetDirection()
+    {
+        direction = Vector2.Normalize(target.transform.position - transform.position);
+    }
+
+    public IEnumerator Attack()
+    {
+        while (true)
+        {
+            attackTarget.LoseHP(3);
+            yield return cooldown;
         }
     }
 }

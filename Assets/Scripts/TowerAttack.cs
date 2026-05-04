@@ -2,11 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TowerAttack : MonoBehaviour
+public class TowerAttack : Tower
 {
     [SerializeField] GameObject bullet;
+    public bool ransom = false, AOEfinished = true;
+    [SerializeField] float cooldownTime;
     List<GameObject> targets = new List<GameObject>();
-    WaitForSeconds cooldown = new WaitForSeconds(1);
+    WaitForSeconds cooldown;
+    [SerializeField] bool isRandom, isAOE;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -24,19 +27,42 @@ public class TowerAttack : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        cooldown = new WaitForSeconds(cooldownTime);
         StartCoroutine(Shoot());
+    }
+
+    private void Update()
+    {
+        for (int i = 0; i < targets.Count; i++)
+        {
+            testEnemy targetScript = targets[i].GetComponent<testEnemy>();
+            if (!targetScript.detectable)
+                targets.Remove(targets[i]);
+        }
+
     }
 
     IEnumerator Shoot()
     {
         while (true)
         {
-            if (targets.Count > 0)
+            if (isAOE && AOEfinished)
             {
-                Debug.Log(targets.ToString());
+                Instantiate(bullet, transform.position + new Vector3(0, 0, 0.01f), Quaternion.identity, transform);
+                AOEfinished = false;
+                yield return cooldown;
+            }
+            else if (targets.Count > 0)
+            {
+                foreach (GameObject obj in targets)
+                    if (obj == null)
+                        targets.Remove(obj);
                 GameObject newBullet = Instantiate(bullet, transform.position, Quaternion.identity);
                 Bullet bulletScript = newBullet.GetComponent<Bullet>();
-                bulletScript.SetTarget(targets[0]);
+                if (isRandom)
+                    bulletScript.SetTarget(targets[Random.Range(0, targets.Count)]);
+                else
+                    bulletScript.SetTarget(targets[0]);
                 yield return cooldown;
             }
             else

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public abstract class Tower
+public class Tower : MonoBehaviour
 {
     public bool canPlaceOnPath;
 }

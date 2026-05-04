@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: -682921264584065261}
   - component: {fileID: 7005857082387659515}
   m_Layer: 0
-  m_Name: Test Attack Tower
+  m_Name: Buildup Tower
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -84,7 +84,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: -712631045867808456, guid: b670ab75dde984907b8570040daa08c5, type: 3}
-  m_Color: {r: 0.059748232, g: 0.12109241, b: 1, a: 1}
+  m_Color: {r: 0.44654083, g: 0.037913773, b: 0.4298164, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -105,9 +105,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed4b496a14f002944b955fe666d96d30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerAttack
-  bullet: {fileID: 7904864821218026307, guid: 8fea0295f86afd949a694bc8ef9de536, type: 3}
+  bullet: {fileID: 7904864821218026307, guid: a92eac683773c64418dab3ff44ee6efb, type: 3}
   ransom: 0
-  cooldownTime: 2
+  cooldownTime: 0.5
   isRandom: 0
 --- !u!58 &7005857082387659515
 CircleCollider2D:

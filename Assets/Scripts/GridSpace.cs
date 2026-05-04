@@ -30,7 +30,7 @@ public class GridSpace : MonoBehaviour, IPointerClickHandler
 
     public void SpawnTower(GameObject towerPrefab)
     {
-        tower = Instantiate(towerPrefab, new Vector3(transform.position.x, transform.position.y, transform.position.z - 1), Quaternion.identity);
+        tower = Instantiate(towerPrefab, new Vector3(transform.position.x, transform.position.y, transform.position.z - 2), Quaternion.identity);
         isOccupied = true;
     }
 
@@ -51,8 +51,12 @@ public class GridSpace : MonoBehaviour, IPointerClickHandler
     {
         if (!isOccupied && gameManager.selectedTower != null)
         {
-            SpawnTower(gameManager.selectedTower);
-            gameManager.SetSelectedTower(null);
+            Tower tower = gameManager.selectedTower.GetComponent<Tower>();
+            if (tower.canPlaceOnPath == isPath)
+            {
+                SpawnTower(gameManager.selectedTower);
+                gameManager.SetSelectedTower(null);
+            }
         }
     }
 }
