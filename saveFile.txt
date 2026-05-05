@@ -1,1 +1,1 @@
-{"level":1,"memory":0,"HP":494,"pathDirs":[],"coords":[{"x":4.0,"y":11.0}],"towers":[{"instanceID":49236}]}
+{"level":4,"memory":18,"HP":389,"pathDirs":[0],"coords":[{"x":3.0,"y":12.0},{"x":5.0,"y":12.0},{"x":4.0,"y":12.0},{"x":3.0,"y":11.0}],"towers":[{"instanceID":9070},{"instanceID":9066},{"instanceID":9078},{"instanceID":9068}]}
