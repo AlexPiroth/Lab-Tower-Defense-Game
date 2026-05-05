@@ -68,7 +68,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 7
+  m_Radius: 1
 --- !u!114 &5026777680392502184
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -191,9 +191,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::testEnemy
   target: {fileID: 0}
   health: 17
-  damage: 0
+  damage: 5
+  value: 5
   speed: 0.005
-  attackCooldown: 0
+  attackCooldown: 0.25
   buildup: 1
   type: 1
   detectable: 1

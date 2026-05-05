@@ -1,0 +1,1 @@
+{"level":1,"memory":0,"HP":494,"pathDirs":[],"coords":[{"x":4.0,"y":11.0}],"towers":[{"instanceID":49236}]}

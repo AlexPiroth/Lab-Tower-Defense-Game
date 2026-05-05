@@ -105,10 +105,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed4b496a14f002944b955fe666d96d30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerAttack
+  canPlaceOnPath: 0
+  price: 4
   bullet: {fileID: 7904864821218026307, guid: 8fea0295f86afd949a694bc8ef9de536, type: 3}
   ransom: 0
+  AOEfinished: 1
   cooldownTime: 2
   isRandom: 0
+  isAOE: 0
 --- !u!58 &7005857082387659515
 CircleCollider2D:
   m_ObjectHideFlags: 0

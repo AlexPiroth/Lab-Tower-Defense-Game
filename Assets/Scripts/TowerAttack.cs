@@ -46,24 +46,29 @@ public class TowerAttack : Tower
     {
         while (true)
         {
-            if (isAOE && AOEfinished)
+            if (!ransom)
             {
-                Instantiate(bullet, transform.position + new Vector3(0, 0, 0.01f), Quaternion.identity, transform);
-                AOEfinished = false;
-                yield return cooldown;
-            }
-            else if (targets.Count > 0)
-            {
-                foreach (GameObject obj in targets)
-                    if (obj == null)
-                        targets.Remove(obj);
-                GameObject newBullet = Instantiate(bullet, transform.position, Quaternion.identity);
-                Bullet bulletScript = newBullet.GetComponent<Bullet>();
-                if (isRandom)
-                    bulletScript.SetTarget(targets[Random.Range(0, targets.Count)]);
+                if (isAOE && AOEfinished)
+                {
+                    Instantiate(bullet, transform.position + new Vector3(0, 0, 0.01f), Quaternion.identity, transform);
+                    AOEfinished = false;
+                    yield return cooldown;
+                }
+                else if (targets.Count > 0)
+                {
+                    foreach (GameObject obj in targets)
+                        if (obj == null)
+                            targets.Remove(obj);
+                    GameObject newBullet = Instantiate(bullet, transform.position, Quaternion.identity);
+                    Bullet bulletScript = newBullet.GetComponent<Bullet>();
+                    if (isRandom)
+                        bulletScript.SetTarget(targets[Random.Range(0, targets.Count)]);
+                    else
+                        bulletScript.SetTarget(targets[0]);
+                    yield return cooldown;
+                }
                 else
-                    bulletScript.SetTarget(targets[0]);
-                yield return cooldown;
+                    yield return null;
             }
             else
                 yield return null;

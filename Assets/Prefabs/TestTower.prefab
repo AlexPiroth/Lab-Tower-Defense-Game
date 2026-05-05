@@ -152,3 +152,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Damageable
   HP: 500
+  isHome: 1
+  HPText: {fileID: 0}

@@ -6,9 +6,9 @@ public class testEnemy : MonoBehaviour
     GameManager gameManager;
     public GameObject target;
     public int health = 5;
-    [SerializeField] int damage;
+    [SerializeField] int damage, value;
     public float speed, attackCooldown;
-    public int buildup = 1, type; // 0 = basic, 1 = ransomware
+    public int buildup = 0, type; // 0 = basic, 1 = ransomware
     public bool detectable = true;
     public Vector2 direction;
     Damageable attackTarget;
@@ -17,6 +17,7 @@ public class testEnemy : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         cooldown = new WaitForSeconds(attackCooldown);
         target = PathScript.previousPathNode;
         transform.position += new Vector3(0, 0, -2);
@@ -62,7 +63,7 @@ public class testEnemy : MonoBehaviour
                 if (tower != null)
                 {
                     tower.ransom = true;
-                    Die();
+                    Destroy(this.gameObject);
                 }
             }
             PathNode pathNode = target.GetComponent<PathNode>();
@@ -73,6 +74,7 @@ public class testEnemy : MonoBehaviour
 
     public virtual void Die()
     {
+        gameManager.GainMemory(value);
         Destroy(this.gameObject);
     }
 
@@ -85,7 +87,7 @@ public class testEnemy : MonoBehaviour
     {
         while (true)
         {
-            attackTarget.LoseHP(3);
+            attackTarget.LoseHP(damage);
             yield return cooldown;
         }
     }

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
@@ -20,7 +21,8 @@ public class Bullet : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (target == null)
+            StartCoroutine(nameof(Cease));
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -40,5 +42,11 @@ public class Bullet : MonoBehaviour
                 enemy.health -= damage;
             Destroy(this.gameObject);
         }
+    }
+
+    IEnumerator Cease()
+    {
+        yield return new WaitForSeconds(6);
+        Destroy(this.gameObject);
     }
 }

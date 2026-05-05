@@ -12,7 +12,7 @@ public class GridSpace : MonoBehaviour, IPointerClickHandler
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+
     }
 
     // Update is called once per frame
@@ -32,6 +32,13 @@ public class GridSpace : MonoBehaviour, IPointerClickHandler
     {
         tower = Instantiate(towerPrefab, new Vector3(transform.position.x, transform.position.y, transform.position.z - 2), Quaternion.identity);
         isOccupied = true;
+        if (tower.GetComponent<Tower>() != null)
+        {
+            if (!gameManager.setup)
+                gameManager.GainMemory(-tower.GetComponent<Tower>().price);
+            gameManager.TriggerReset();
+            gameManager.TowerSpawned(towerPrefab, this.gameObject);
+        }
     }
 
     public void SetPath(int direction)

@@ -19,16 +19,20 @@ public class DamageArea : MonoBehaviour
     {
         GameObject collided = collision.gameObject;
         if (collided.CompareTag("Enemy"))
+        {
             targets.Add(collided);
-        collided.GetComponent<testEnemy>().speed /= 2f;
+            collided.GetComponent<testEnemy>().speed /= 2f;
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
         GameObject collided = collision.gameObject;
         if (targets.Contains(collided))
+        {
+            collided.GetComponent<testEnemy>().speed *= 2f;
             targets.Remove(collided);
-        collided.GetComponent<testEnemy>().speed *= 2f;
+        }
     }
     IEnumerator Damage()
     {

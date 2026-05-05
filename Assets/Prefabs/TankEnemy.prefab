@@ -108,9 +108,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::testEnemy
   target: {fileID: 0}
   health: 40
-  damage: 0
+  damage: 5
+  value: 3
   speed: 0.005
-  attackCooldown: 0
+  attackCooldown: 1
   buildup: 1
   type: 0
   detectable: 1

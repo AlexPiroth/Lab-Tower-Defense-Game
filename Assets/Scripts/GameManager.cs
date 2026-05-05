@@ -1,17 +1,21 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    static bool continuing = false;
+    public static bool continuing = false;
 
     // Grid Dimensions
     public const int HEIGHT = 10, WIDTH = 18;
 
     // Stats
-    int level;
+    int level = 0;
     public int playerHP; // Might change to float after some playtesting depending on how damage works
     public int memory;
     
@@ -21,73 +25,193 @@ public class GameManager : MonoBehaviour
     public GameObject[,] grid;
     public int[] spawnCoords;
     public GameObject cameraObj;
+    [SerializeField] TMP_Text memoryText;
 
     // Current Play Data
     public GameObject selectedTower;
+    public int selectedTowerCost;
 
     public GameObject testTower, testEnemy;
 
     // Wave Loading Checks
     int waveLength;
     bool waveDone = false;
-    private readonly WaitForSeconds cooldown = new(3);
+    private readonly WaitForSeconds cooldown = new(1);
+    private readonly WaitForSeconds longCooldown = new(3);
     private readonly WaitForSeconds warmup = new(5);
 
     // Prefabs
     [SerializeField] GameObject[] allEnemyTypes;
     [SerializeField] GameObject gridPrefab, spawnPointPrefab;
 
-    cluster[] clusters;
-    bool startGame = false;
+    [SerializeField] TextAsset levelData;
 
-    struct cluster
-    {
-        public GameObject type;
-        public int count;
-    }
+    public delegate void ResetButtons();
+    public event ResetButtons Reset;
+
+    string[] levels;
+
+    bool startGame = false;
+    public bool setup = true;
+
+    Queue<int> pathQueue = new Queue<int>();
+    Dictionary<Vector2, GameObject> towerDict = new Dictionary<Vector2, GameObject>();
+    string filename = "saveFile.txt";
+    public Damageable home;
+    [SerializeField] GameObject pausePrompt;
+    public int loadHP = -100;
+
 
     IEnumerator SpawnTestEnemy()
     {
         while (true)
         {
-            Instantiate(testEnemy, spawnPoint.transform.position, Quaternion.identity);
-            yield return cooldown;
+            if (levels[level] != null)
+            {
+                int[] currentLevelContents = Array.ConvertAll<string, int>(levels[level].Split('|'), int.Parse);
+                for (int i = 0; i < currentLevelContents.Length; i += 2)
+                {
+                    for (int j = 0; j < currentLevelContents[i + 1]; j++)
+                    {
+                        Instantiate(allEnemyTypes[currentLevelContents[i]], spawnPoint.transform.position, Quaternion.identity);
+                        yield return cooldown;
+                    }
+                }
+            }
+            else // Random generation after scripted waves end
+            {
+                int waves = UnityEngine.Random.Range(1, 6);
+                for (int i = 0; i < waves; i++)
+                {
+                    int count = UnityEngine.Random.Range(1, 25);
+                    int enemyNum = UnityEngine.Random.Range(0, 5);
+                    for (int j = 0; j < count; j++)
+                    {
+                        Instantiate(allEnemyTypes[enemyNum], spawnPoint.transform.position, Quaternion.identity);
+                        yield return cooldown;
+                    }
+                }
+            }
+            level++;
+            yield return longCooldown;
         }
     }
 
     private void Update()
     {
-        if (startGame)
-        {
-            if (livingEnemies.Length == 0 && waveDone)
-            {
-                level++;
-                waveDone = false;
-                SpawnNextWave();
-            }
-        }
+
     }
 
     private void Awake()
     {
+        // Reset timeScale if it was modified
+        Time.timeScale = 1;
+
+        // Load level data
+        levels = levelData.text.Split(new[] { "\r\n", "\r", "\n" }, System.StringSplitOptions.None);
+
         grid = new GameObject[HEIGHT, WIDTH];
         MakeEmptyGrid();
+        MakeInitialGrid();
+
         if (continuing)
             LoadSave();
-        else
-            MakeInitialGrid();
 
-        // Wait 5 seconds
-        //StartCoroutine(nameof(WarmUp));
+        continuing = false;
 
-        // Start the game
-        //startGame = true;
+        memoryText.text = "Available Memory: " + memory;
+        setup = false;
         StartCoroutine(SpawnTestEnemy());
     }
 
     private void LoadSave()
     {
-        // Load the saved grid, figure this out later
+        if (File.Exists(filename))
+        {
+            // Get data
+            string fileText = File.ReadAllText(filename);
+            SaveData data = JsonUtility.FromJson<SaveData>(fileText);
+
+            // Load it
+            level = data.level;
+            memory = data.memory;
+            loadHP = data.HP;
+            int currDir;
+            for (int i = 0; i < data.pathDirs.Length; i++)
+            {
+                currDir = data.pathDirs[i];
+                ExtendPath(currDir);
+                pathQueue.Enqueue(currDir);
+            }
+            for (int i = 0; i < data.towers.Length; i++)
+            {
+                grid[(int)data.coords[i].x, (int)data.coords[i].y].GetComponent<GridSpace>().SpawnTower(data.towers[i]);
+            }
+        }
+    }
+
+    public void Pause()
+    {
+        if (Time.timeScale == 0)
+        {
+            pausePrompt.SetActive(false);
+            Time.timeScale = 1;
+        }
+        else
+        {
+            pausePrompt.SetActive(true);
+            Time.timeScale = 0;
+        }
+    }
+
+    public void QuitToTitle()
+    {
+        SceneManager.LoadScene("Title Screen");
+    }
+
+    public void Save()
+    {
+        // Make save data
+        SaveData data = new SaveData();
+        data.level = level;
+        data.memory = memory;
+        data.HP = home.HP;
+        data.pathDirs = pathQueue.ToArray();
+        data.coords = towerDict.Keys.ToArray();
+        data.towers = towerDict.Values.ToArray();
+
+        // Save as json
+        string jsonData = JsonUtility.ToJson(data);
+        Debug.Log(jsonData);
+        if (File.Exists(filename))
+            File.Delete(filename);
+        File.WriteAllText(filename, jsonData);
+    }
+
+    class SaveData
+    {
+        public int level, memory, HP;
+        public int[] pathDirs;
+        public Vector2[] coords;
+        public GameObject[] towers;
+    }
+
+    public void TowerSpawned(GameObject tower, GameObject space)
+    {
+        for (int i = 0; i < HEIGHT; i++) // There's definitely an easier way to do this
+        {
+            for (int j = 0; j < WIDTH; j++)
+            {
+                if (grid[i, j] == space)
+                    towerDict.Add(new Vector2(i, j), tower);
+            }
+        }
+    }
+
+    public void ReloadScene()
+    {
+        string sceneName = SceneManager.GetActiveScene().name;
+        SceneManager.LoadScene(sceneName);
     }
 
     private void MakeEmptyGrid()
@@ -113,6 +237,8 @@ public class GameManager : MonoBehaviour
                 GameObject newCell = Instantiate(gridPrefab, new Vector2(xCoord, yCoord), Quaternion.identity);
                 grid[i,j] = newCell;
                 newCell.transform.SetParent(gridParent.transform);
+                GridSpace space = newCell.GetComponent<GridSpace>();
+                space.gameManager = this;
                 xCoord += size;
             }
             yCoord -= size;
@@ -190,6 +316,9 @@ public class GameManager : MonoBehaviour
                 break;
         }
 
+        if (!setup)
+            pathQueue.Enqueue(direction);
+
         // Change current spawn to a path
         GridSpace spawn = spawnPoint.GetComponent<GridSpace>();
         spawn.path.Extend(direction);
@@ -197,46 +326,57 @@ public class GameManager : MonoBehaviour
         // Set new spawn point
         spawnPoint = newSpawn.gameObject;
         newSpawn.SetPath(direction);
+
+        // Deduct price
+        if (!setup)
+            GainMemory(-20);
+
+        // Reset Buttons
+        Reset?.Invoke();
     }
 
-    private void SpawnNextWave()
+    public bool checkLegality(int direction)
     {
-        if (level > 100) // Random wave generation above wave 100
+        GridSpace check;
+        switch (direction)
         {
-            waveLength = level / 2; // Maybe change after balancing
-            for (int i = 0; i < waveLength; i++)
-            {
-                StartCoroutine(nameof(SpawnRandomCluster));
-            }
+            case 0:
+                check = grid[spawnCoords[0] - 1, spawnCoords[1]].GetComponent<GridSpace>();
+                if (check == null || !check.CheckSpawnLegality())
+                    return false;
+                break;
+
+            case 1:
+                check = grid[spawnCoords[0] + 1, spawnCoords[1]].GetComponent<GridSpace>();
+                if (check == null || !check.CheckSpawnLegality())
+                    return false;
+                break;
+
+            case 2:
+                check = grid[spawnCoords[0] - 1, spawnCoords[1] - 1].GetComponent<GridSpace>();
+                if (check == null || !check.CheckSpawnLegality())
+                    return false;
+                break;
+
+            case 3:
+                check = grid[spawnCoords[0] - 1, spawnCoords[1] + 1].GetComponent<GridSpace>();
+                if (check == null || !check.CheckSpawnLegality())
+                    return false;
+                break;
         }
-        else // Manual wave generation, read from clusters
-        {
-            Debug.Log("blork");
-            for (int i = 0; i < waveLength; i++)
-            {
-                StartCoroutine(nameof(SpawnManualCluster));
-            }
-        }
-        
-        waveDone = true;
+        return true;
     }
 
-    IEnumerator SpawnRandomCluster()
+    public void GainMemory(int newMemory)
     {
-        int enemyType = UnityEngine.Random.Range(1, 11); // Assuming 10 enemy types, pick one to spawn
-
-        for (int j = 0; j < UnityEngine.Random.Range(1, 7); j++) // Maximum of 6 enemies in a spawn cluster, maybe amend after playtesting
-            Instantiate(allEnemyTypes[enemyType], spawnPoint.transform.position, Quaternion.identity); // Spawn an enemy at spawnPoint
-
-            yield return cooldown; // Potentially change cooldown time after playtesting
+        memory += newMemory;
+        memoryText.text = "Available Memory: " + memory;
+        Reset?.Invoke();
     }
 
-    IEnumerator SpawnManualCluster()
+    public void TriggerReset()
     {
-        for (int j = 0; j < 8888888; j++)
-            Instantiate(clusters[j].type, spawnPoint.transform.position, Quaternion.identity); // Spawn an enemy at spawnPoint
-
-            yield return cooldown;
+        Reset?.Invoke();
     }
 
     IEnumerator WarmUp()

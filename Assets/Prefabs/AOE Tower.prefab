@@ -105,10 +105,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed4b496a14f002944b955fe666d96d30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerAttack
+  canPlaceOnPath: 0
+  price: 8
   bullet: {fileID: 8066515682923373363, guid: a67d47494ec36584ea0e5705517e93da, type: 3}
   ransom: 0
   AOEfinished: 1
-  cooldownTime: 3
+  cooldownTime: 4
   isRandom: 0
   isAOE: 1
 --- !u!58 &7005857082387659515
